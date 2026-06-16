@@ -122,7 +122,7 @@ export default function DiffChecker() {
   const scrollPosRef = useRef(0)
   const [, forceUpdate] = useState(0)
 
-  const diff = useMemo(() => computeDiff(right, left), [left, right])
+  const diff = useMemo(() => computeDiff(left, right), [left, right])
   const chunks = useMemo(() => findChunks(diff), [diff])
   const pairs = useMemo(() => pairRemovedAdded(diff), [diff])
 
@@ -205,6 +205,28 @@ export default function DiffChecker() {
     setCopied(true); setTimeout(() => setCopied(false), 1500)
   }, [diff])
 
+  const replacePaired = useCallback((lineIdx: number) => {
+    const pairedIdx = pairs.get(lineIdx)
+    if (pairedIdx == null) return
+    const pairedLine = diff[pairedIdx]
+    const currentLine = diff[lineIdx]
+    if (!pairedLine || !currentLine) return
+
+    if (currentLine.type === "removed" && currentLine.leftNum) {
+      const lines = left.split("\n")
+      if (currentLine.leftNum > 0 && currentLine.leftNum <= lines.length) {
+        lines[currentLine.leftNum - 1] = pairedLine.text
+        setLeft(lines.join("\n"))
+      }
+    } else if (currentLine.type === "added" && currentLine.rightNum) {
+      const lines = right.split("\n")
+      if (currentLine.rightNum > 0 && currentLine.rightNum <= lines.length) {
+        lines[currentLine.rightNum - 1] = pairedLine.text
+        setRight(lines.join("\n"))
+      }
+    }
+  }, [diff, pairs, left, right])
+
   return (
     <div className="flex flex-col gap-6">
       <div className="grid gap-4 sm:grid-cols-2">
@@ -247,6 +269,15 @@ export default function DiffChecker() {
                 <div key={i} className={"flex whitespace-pre-wrap " + (line.type === "added" ? "bg-green-50 dark:bg-green-950" : line.type === "removed" ? "bg-red-50 dark:bg-red-950" : "bg-white dark:bg-zinc-800")}>
                   <span className="inline-block w-10 shrink-0 select-none border-r border-zinc-200 px-2 text-right text-xs text-zinc-400 dark:border-zinc-700">{line.leftNum ?? " "}</span>
                   <span className="inline-block w-10 shrink-0 select-none border-r border-zinc-200 px-2 text-right text-xs text-zinc-400 dark:border-zinc-700">{line.rightNum ?? " "}</span>
+                  {pairs.has(i) && (
+                    <span className="inline-flex items-center w-5 shrink-0 border-r border-zinc-200">
+                      <button onClick={() => replacePaired(i)}
+                        className="cursor-pointer w-full leading-none text-zinc-400 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-200"
+                        title={line.type === "removed" ? "Use this line in Modified" : "Use this line in Original"}>
+                        {line.type === "removed" ? "▼" : "▲"}
+                      </button>
+                    </span>
+                  )}
                   <span className={"inline-block w-4 shrink-0 select-none text-center text-xs " + (line.type === "added" ? "text-green-700 dark:text-green-400" : line.type === "removed" ? "text-red-700 dark:text-red-400" : "text-zinc-400")}>
                     {line.type === "added" ? "+" : line.type === "removed" ? "-" : " "}
                   </span>
