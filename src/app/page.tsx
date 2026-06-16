@@ -1,5 +1,12 @@
 import Link from "next/link"
+import type { Metadata } from "next"
 import { tools } from "@/lib/tools"
+
+export const metadata: Metadata = {
+  title: "Dev Tools Collection",
+  description:
+    "A collection of free online developer tools including JSON formatter, Base64 encoder, UUID generator, regex tester, diff checker, QR code generator, color converter, and many more.",
+}
 
 export default function Home() {
   return (

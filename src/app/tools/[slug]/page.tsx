@@ -20,7 +20,10 @@ export async function generateMetadata({ params }: { params: Params }) {
   const { slug } = await params
   const tool = tools.find((t) => t.slug === slug)
   if (!tool) return { title: "Tool Not Found" }
-  return { title: `${tool.name} - Dev Tools Collection` }
+  return {
+    title: tool.metaTitle || `${tool.name} - Dev Tools Collection`,
+    description: tool.metaDescription || tool.description,
+  }
 }
 
 export async function generateStaticParams() {
@@ -68,7 +71,7 @@ export default async function ToolPage({ params }: { params: Params }) {
           <TimestampConverter />
         ) : tool.slug === "url-encoder" ? (
           <UrlEncoderDecoder />
-        ) : tool.slug === "jwt-decoder" ? (
+        ) : tool.slug === "jwt-debugger" ? (
           <JwtDecoder />
         ) : tool.slug === "json-to-types" ? (
           <JsonToTypes />
