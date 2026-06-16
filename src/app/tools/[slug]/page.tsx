@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: { params: Params }) {
   const { slug } = await params
   const tool = tools.find((t) => t.slug === slug)
   if (!tool) return { title: "Tool Not Found" }
-  return { title: `${tool.name} - Mobile Dev Tools` }
+  return { title: `${tool.name} - Dev Tools Collection` }
 }
 
 export async function generateStaticParams() {

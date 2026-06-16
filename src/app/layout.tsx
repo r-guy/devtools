@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Mobile Dev Tools",
-  description: "A collection of handy utilities for mobile developers",
+  title: "Dev Tools Collection",
+  description: "A collection of handy utilities for developers",
 };
 
 export default function RootLayout({

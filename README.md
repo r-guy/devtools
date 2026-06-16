@@ -1,4 +1,4 @@
-# Mobile Dev Tools
+# Dev Tools Collection
 
 A free collection of developer tools for mobile and web developers. Built with Next.js and TypeScript, all tools run directly in your browser with no server-side processing required.
 
