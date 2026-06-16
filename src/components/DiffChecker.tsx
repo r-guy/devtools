@@ -118,7 +118,10 @@ export default function DiffChecker() {
   const [collapsed, setCollapsed] = useState(false)
   const [arrowY, setArrowY] = useState<number | null>(null)
   const diffRef = useRef<HTMLDivElement>(null)
+  const leftRef = useRef<HTMLTextAreaElement>(null)
+  const rightRef = useRef<HTMLTextAreaElement>(null)
   const chunkRef = useRef(0)
+  const undoStack = useRef<Array<{ left: string; right: string }>>([])
   const scrollPosRef = useRef(0)
   const [, forceUpdate] = useState(0)
 
@@ -193,6 +196,21 @@ export default function DiffChecker() {
   }, [diff])
 
   useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
+        if (undoStack.current.length > 0) {
+          const prev = undoStack.current.pop()!
+          setLeft(prev.left)
+          setRight(prev.right)
+          e.preventDefault()
+        }
+      }
+    }
+    document.addEventListener("keydown", handler)
+    return () => document.removeEventListener("keydown", handler)
+  }, [])
+
+  useEffect(() => {
     if (!collapsed && scrollPosRef.current > 0 && diffRef.current) {
       const top = diffRef.current.getBoundingClientRect().top + window.scrollY
       window.scrollTo({ top: top + scrollPosRef.current, behavior: "smooth" })
@@ -205,6 +223,15 @@ export default function DiffChecker() {
     setCopied(true); setTimeout(() => setCopied(false), 1500)
   }, [diff])
 
+  const updateTextarea = useCallback((el: HTMLTextAreaElement | null, newValue: string) => {
+    if (!el) return
+    const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value")?.set
+    if (nativeSetter) {
+      nativeSetter.call(el, newValue)
+      el.dispatchEvent(new Event("input", { bubbles: true }))
+    }
+  }, [])
+
   const replacePaired = useCallback((lineIdx: number) => {
     const pairedIdx = pairs.get(lineIdx)
     if (pairedIdx == null) return
@@ -212,32 +239,34 @@ export default function DiffChecker() {
     const currentLine = diff[lineIdx]
     if (!pairedLine || !currentLine) return
 
+    undoStack.current.push({ left, right })
+
     if (currentLine.type === "removed" && currentLine.leftNum) {
       const lines = left.split("\n")
       if (currentLine.leftNum > 0 && currentLine.leftNum <= lines.length) {
         lines[currentLine.leftNum - 1] = pairedLine.text
-        setLeft(lines.join("\n"))
+        updateTextarea(leftRef.current, lines.join("\n"))
       }
     } else if (currentLine.type === "added" && currentLine.rightNum) {
       const lines = right.split("\n")
       if (currentLine.rightNum > 0 && currentLine.rightNum <= lines.length) {
         lines[currentLine.rightNum - 1] = pairedLine.text
-        setRight(lines.join("\n"))
+        updateTextarea(rightRef.current, lines.join("\n"))
       }
     }
-  }, [diff, pairs, left, right])
+  }, [diff, pairs, left, right, updateTextarea])
 
   return (
     <div className="flex flex-col gap-6">
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">Original</label>
-          <textarea value={left} onChange={(e) => setLeft(e.target.value)} placeholder="Paste original text..."
+          <textarea ref={leftRef} value={left} onChange={(e) => setLeft(e.target.value)} placeholder="Paste original text..."
             className="min-h-[200px] w-full rounded-lg border border-zinc-300 bg-white p-4 font-mono text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder-zinc-500" spellCheck={false} />
         </div>
         <div>
           <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">Modified</label>
-          <textarea value={right} onChange={(e) => setRight(e.target.value)} placeholder="Paste modified text..."
+          <textarea ref={rightRef} value={right} onChange={(e) => setRight(e.target.value)} placeholder="Paste modified text..."
             className="min-h-[200px] w-full rounded-lg border border-zinc-300 bg-white p-4 font-mono text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder-zinc-500" spellCheck={false} />
         </div>
       </div>
