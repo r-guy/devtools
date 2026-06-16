@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback, useMemo, useRef, useEffect } from "react"
+import { Minimize2, Maximize2 } from "lucide-react"
 
 interface DiffLine {
   type: "added" | "removed" | "same"
@@ -114,9 +115,11 @@ export default function DiffChecker() {
   const [left, setLeft] = useState("")
   const [right, setRight] = useState("")
   const [copied, setCopied] = useState(false)
+  const [collapsed, setCollapsed] = useState(false)
   const [arrowY, setArrowY] = useState<number | null>(null)
   const diffRef = useRef<HTMLDivElement>(null)
   const chunkRef = useRef(0)
+  const scrollPosRef = useRef(0)
   const [, forceUpdate] = useState(0)
 
   const diff = useMemo(() => computeDiff(right, left), [left, right])
@@ -189,6 +192,13 @@ export default function DiffChecker() {
     }
   }, [diff])
 
+  useEffect(() => {
+    if (!collapsed && scrollPosRef.current > 0 && diffRef.current) {
+      const top = diffRef.current.getBoundingClientRect().top + window.scrollY
+      window.scrollTo({ top: top + scrollPosRef.current, behavior: "smooth" })
+    }
+  }, [collapsed])
+
   const handleCopy = useCallback(async () => {
     const text = diff.map((l) => `${l.type === "added" ? "+ " : l.type === "removed" ? "- " : "  "}${l.text}`).join("\n")
     await navigator.clipboard.writeText(text)
@@ -219,13 +229,18 @@ export default function DiffChecker() {
               {chunks.length > 0 && <span className="text-zinc-400 dark:text-zinc-500">Diff {chunkRef.current + 1} of {chunks.length}</span>}
             </div>
             <div className="flex items-center gap-2">
+              <button onClick={() => { if (collapsed && diffRef.current) scrollPosRef.current = diffRef.current.scrollTop; setCollapsed(!collapsed) }}
+                className="relative cursor-pointer group rounded-lg border border-zinc-300 bg-white px-2 py-1.5 text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700">
+                {collapsed ? <Maximize2 size={14} /> : <Minimize2 size={14} />}
+                <span className="invisible group-hover:visible absolute left-1/2 -translate-x-1/2 top-full mt-1 whitespace-nowrap rounded bg-zinc-800 px-2 py-1 text-xs text-white dark:bg-zinc-100 dark:text-zinc-900">{collapsed ? "Expand" : "Collapse"}</span>
+              </button>
               <button onClick={handleCopy} className="cursor-pointer rounded-lg border border-zinc-300 bg-white px-3 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700">
                 {copied ? "Copied!" : "Copy Diff"}
               </button>
             </div>
           </div>
           <div className="flex gap-2">
-            <div ref={diffRef} className="flex-1 rounded-lg border border-zinc-300 font-mono text-sm leading-relaxed overflow-hidden dark:border-zinc-700">
+            <div ref={diffRef} className={"flex-1 rounded-lg border border-zinc-300 font-mono text-sm leading-relaxed overflow-hidden dark:border-zinc-700 " + (collapsed ? "max-h-[500px] overflow-y-auto" : "")}>
               {diff.map((line, i) => {
               const segs = charDiffs.get(i)
               return (
@@ -259,11 +274,11 @@ export default function DiffChecker() {
             <div className="fixed right-10 z-20 flex flex-col items-center gap-1 text-lg leading-none"
                  style={{ top: arrowY, transform: "translateY(-50%)" }}>
                 <button onClick={() => goTo("prev")}
-                  className="relative cursor-pointer group rounded-full w-8 h-8 flex items-center justify-center border-2 bg-zinc-200 text-zinc-600 hover:bg-zinc-300 border-white dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600 dark:border-zinc-500">
+                  className="relative cursor-pointer group rounded-full w-8 h-8 flex items-center justify-center border-1 bg-zinc-200 text-zinc-600 hover:bg-zinc-300 border-white dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600 dark:border-zinc-500">
                   <span className="text-sm">▲</span><span className="invisible group-hover:visible absolute right-full top-1/2 -translate-y-1/2 mr-3 whitespace-nowrap rounded bg-zinc-800 px-2 py-1 text-xs text-white dark:bg-zinc-100 dark:text-zinc-900">You can also use ↑ on keyboard</span>
                 </button>
                 <button onClick={() => goTo("next")}
-                  className="relative cursor-pointer group rounded-full w-8 h-8 flex items-center justify-center border-2 bg-zinc-200 text-zinc-600 hover:bg-zinc-300 border-white dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600 dark:border-zinc-500">
+                  className="relative cursor-pointer group rounded-full w-8 h-8 flex items-center justify-center border-1 bg-zinc-200 text-zinc-600 hover:bg-zinc-300 border-white dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600 dark:border-zinc-500">
                   <span className="text-sm">▼</span><span className="invisible group-hover:visible absolute right-full top-1/2 -translate-y-1/2 mr-3 whitespace-nowrap rounded bg-zinc-800 px-2 py-1 text-xs text-white dark:bg-zinc-100 dark:text-zinc-900">You can also use ↓ on keyboard</span>
                 </button>
               </div>
