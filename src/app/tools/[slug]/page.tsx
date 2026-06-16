@@ -22,8 +22,11 @@ export async function generateMetadata({ params }: { params: Params }) {
   const tool = tools.find((t) => t.slug === slug)
   if (!tool) return { title: "Tool Not Found" }
   return {
-    title: tool.metaTitle || `${tool.name} - Dev Tools Collection`,
+    title: tool.metaTitle || tool.name,
     description: tool.metaDescription || tool.description,
+    alternates: {
+      canonical: `/tools/${slug}`,
+    },
   }
 }
 

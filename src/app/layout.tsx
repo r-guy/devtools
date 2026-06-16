@@ -1,6 +1,7 @@
 import { Analytics } from "@vercel/analytics/next"
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,7 +15,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Dev Tools Collection",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Dev Tools Collection",
+    template: "%s - Dev Tools Collection",
+  },
   description: "A collection of handy utilities for developers",
 };
 
