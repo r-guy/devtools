@@ -36,8 +36,26 @@ export default async function ToolPage({ params }: { params: Params }) {
   const tool = tools.find((t) => t.slug === slug)
   if (!tool) notFound()
 
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: tool.name,
+    description: tool.metaDescription || tool.description,
+    applicationCategory: "DeveloperApplication",
+    operatingSystem: "Web Browser",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+    },
+  }
+
   return (
     <div className="flex flex-1 flex-col items-center px-4 py-16 sm:px-6 lg:px-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
       <div className="w-full">
         <Link
           href="/"

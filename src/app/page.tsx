@@ -9,8 +9,26 @@ export const metadata: Metadata = {
 }
 
 export default function Home() {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: "Dev Tools Collection",
+    description: "A collection of free online developer tools including JSON formatter, Base64 encoder, UUID generator, regex tester, diff checker, QR code generator, color converter, and many more.",
+    applicationCategory: "DeveloperApplication",
+    operatingSystem: "Web Browser",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+    },
+  }
+
   return (
     <main className="flex flex-1 flex-col items-center px-4 py-16 sm:px-6 lg:px-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
       <div className="w-full">
         <div className="mb-12 text-center">
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
