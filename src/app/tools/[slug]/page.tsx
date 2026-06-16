@@ -34,7 +34,7 @@ export default async function ToolPage({ params }: { params: Params }) {
 
   return (
     <div className="flex flex-1 flex-col items-center px-4 py-16 sm:px-6 lg:px-8">
-      <div className="w-full max-w-3xl">
+      <div className="w-full">
         <Link
           href="/"
           className="mb-8 inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
