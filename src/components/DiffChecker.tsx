@@ -114,6 +114,7 @@ export default function DiffChecker() {
   const [left, setLeft] = useState("")
   const [right, setRight] = useState("")
   const [copied, setCopied] = useState(false)
+  const [arrowY, setArrowY] = useState<number | null>(null)
   const diffRef = useRef<HTMLDivElement>(null)
   const chunkRef = useRef(0)
   const [, forceUpdate] = useState(0)
@@ -142,12 +143,12 @@ export default function DiffChecker() {
 
   const goTo = useCallback((dir: "prev" | "next") => {
     const cur = chunkRef.current
-    const next = dir === "next" ? cur + 1 : cur - 1
-    if (next < 0 || next >= chunks.length) return
-    chunkRef.current = next
+    let target = dir === "next" ? cur + 1 : cur - 1
+    if (chunks.length === 1) target = 0
+    else if (target < 0 || target >= chunks.length) return
+    chunkRef.current = target
     forceUpdate(n => n + 1)
-    const offset = chunks.length > 1 ? 1 : 0
-    const el = diffRef.current?.children[chunks[next] + offset] as HTMLElement | undefined
+    const el = diffRef.current?.children[chunks[target]] as HTMLElement | undefined
     el?.scrollIntoView({ behavior: "smooth", block: "center" })
   }, [chunks])
 
@@ -163,6 +164,30 @@ export default function DiffChecker() {
     document.addEventListener("keydown", handler)
     return () => document.removeEventListener("keydown", handler)
   }, [goTo])
+
+  useEffect(() => {
+    function calc() {
+      if (!diffRef.current) return
+      const rect = diffRef.current.getBoundingClientRect()
+      const vh = window.innerHeight
+      if (rect.bottom < 0 || rect.top > vh) { setArrowY(null); return }
+
+      const center = vh / 2
+      const topBoundary = rect.top + 48
+      const bottomBoundary = rect.bottom - 48
+
+      if (topBoundary > center) setArrowY(Math.max(topBoundary, 48))
+      else if (bottomBoundary < center) setArrowY(Math.min(bottomBoundary, vh - 48))
+      else setArrowY(center)
+    }
+    calc()
+    window.addEventListener("scroll", calc, true)
+    window.addEventListener("resize", calc)
+    return () => {
+      window.removeEventListener("scroll", calc, true)
+      window.removeEventListener("resize", calc)
+    }
+  }, [diff])
 
   const handleCopy = useCallback(async () => {
     const text = diff.map((l) => `${l.type === "added" ? "+ " : l.type === "removed" ? "- " : "  "}${l.text}`).join("\n")
@@ -191,7 +216,7 @@ export default function DiffChecker() {
             <div className="flex items-center gap-4 text-xs">
               {stats.added > 0 && <span className="text-green-700 dark:text-green-400">+{stats.added} added</span>}
               {stats.removed > 0 && <span className="text-red-700 dark:text-red-400">-{stats.removed} removed</span>}
-              {chunks.length > 1 && <span className="text-zinc-400 dark:text-zinc-500">Diff {chunkRef.current + 1} of {chunks.length}</span>}
+              {chunks.length > 0 && <span className="text-zinc-400 dark:text-zinc-500">Diff {chunkRef.current + 1} of {chunks.length}</span>}
             </div>
             <div className="flex items-center gap-2">
               <button onClick={handleCopy} className="cursor-pointer rounded-lg border border-zinc-300 bg-white px-3 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700">
@@ -228,22 +253,23 @@ export default function DiffChecker() {
                 </div>
               )
             })}
-            </div>
-            {chunks.length > 1 && (
-              <div className="sticky top-4 self-start flex flex-col items-center gap-1 text-lg leading-none">
+          </div>
+          </div>
+          {chunks.length > 0 && arrowY !== null && (
+            <div className="fixed right-10 z-20 flex flex-col items-center gap-1 text-lg leading-none"
+                 style={{ top: arrowY, transform: "translateY(-50%)" }}>
                 <button onClick={() => goTo("prev")}
-                  className={"relative cursor-pointer group rounded-full w-7 h-7 flex items-center justify-center " + (chunkRef.current === 0 ? "bg-zinc-100 text-zinc-300 dark:bg-zinc-800 dark:text-zinc-700" : "bg-zinc-200 text-zinc-600 hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-600")}>
-                  ▲<span className="invisible group-hover:visible absolute right-full top-1/2 -translate-y-1/2 mr-2 whitespace-nowrap rounded bg-zinc-800 px-2 py-1 text-xs text-white dark:bg-zinc-100 dark:text-zinc-900">You can also use ↑ on keyboard</span>
+                  className="relative cursor-pointer group rounded-full w-8 h-8 flex items-center justify-center border-2 bg-zinc-200 text-zinc-600 hover:bg-zinc-300 border-white dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600 dark:border-zinc-500">
+                  <span className="text-sm">▲</span><span className="invisible group-hover:visible absolute right-full top-1/2 -translate-y-1/2 mr-3 whitespace-nowrap rounded bg-zinc-800 px-2 py-1 text-xs text-white dark:bg-zinc-100 dark:text-zinc-900">You can also use ↑ on keyboard</span>
                 </button>
                 <button onClick={() => goTo("next")}
-                  className={"relative cursor-pointer group rounded-full w-7 h-7 flex items-center justify-center " + (chunkRef.current >= chunks.length - 1 ? "bg-zinc-100 text-zinc-300 dark:bg-zinc-800 dark:text-zinc-700" : "bg-zinc-200 text-zinc-600 hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-600")}>
-                  ▼<span className="invisible group-hover:visible absolute right-full top-1/2 -translate-y-1/2 mr-2 whitespace-nowrap rounded bg-zinc-800 px-2 py-1 text-xs text-white dark:bg-zinc-100 dark:text-zinc-900">You can also use ↓ on keyboard</span>
+                  className="relative cursor-pointer group rounded-full w-8 h-8 flex items-center justify-center border-2 bg-zinc-200 text-zinc-600 hover:bg-zinc-300 border-white dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600 dark:border-zinc-500">
+                  <span className="text-sm">▼</span><span className="invisible group-hover:visible absolute right-full top-1/2 -translate-y-1/2 mr-3 whitespace-nowrap rounded bg-zinc-800 px-2 py-1 text-xs text-white dark:bg-zinc-100 dark:text-zinc-900">You can also use ↓ on keyboard</span>
                 </button>
               </div>
             )}
-          </div>
-        </>
-      )}
+          </>
+        )}
     </div>
   )
 }
