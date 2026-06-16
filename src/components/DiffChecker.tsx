@@ -100,7 +100,7 @@ function pairRemovedAdded(diff: DiffLine[]) {
   return pairs
 }
 
-function diffChunks(diff: DiffLine[]) {
+function findChunks(diff: DiffLine[]) {
   const chunks: number[] = []
   let inC = false
   for (let i = 0; i < diff.length; i++) {
@@ -119,7 +119,7 @@ export default function DiffChecker() {
   const [, forceUpdate] = useState(0)
 
   const diff = useMemo(() => computeDiff(right, left), [left, right])
-  const chunks = useMemo(() => diffChunks(diff), [diff])
+  const chunks = useMemo(() => findChunks(diff), [diff])
   const pairs = useMemo(() => pairRemovedAdded(diff), [diff])
 
   const charDiffs = useMemo(() => {
@@ -203,14 +203,18 @@ export default function DiffChecker() {
             <div className="sticky top-4 z-10 flex justify-end">
               <div className="mr-3 relative flex flex-col items-center gap-1 text-lg leading-none">
                 <button onClick={() => goTo("prev")}
-                  className={"relative cursor-pointer group " + (chunkRef.current === 0 ? "text-zinc-300 dark:text-zinc-700" : "text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200")}>▲<span className="invisible group-hover:visible absolute left-full top-1/2 -translate-y-1/2 ml-2 whitespace-nowrap rounded bg-zinc-800 px-2 py-1 text-xs text-white dark:bg-zinc-100 dark:text-zinc-900">You can also use ↑ on keyboard</span></button>
+                  className={"relative cursor-pointer group " + (chunkRef.current === 0 ? "text-zinc-300 dark:text-zinc-700" : "text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200")}>
+                  ▲<span className="invisible group-hover:visible absolute left-full top-1/2 -translate-y-1/2 ml-2 whitespace-nowrap rounded bg-zinc-800 px-2 py-1 text-xs text-white dark:bg-zinc-100 dark:text-zinc-900">You can also use ↑ on keyboard</span>
+                </button>
                 <button onClick={() => goTo("next")}
-                  className={"relative cursor-pointer group " + (chunkRef.current >= chunks.length - 1 ? "text-zinc-300 dark:text-zinc-700" : "text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200")}>▼<span className="invisible group-hover:visible absolute left-full top-1/2 -translate-y-1/2 ml-2 whitespace-nowrap rounded bg-zinc-800 px-2 py-1 text-xs text-white dark:bg-zinc-100 dark:text-zinc-900">You can also use ↓ on keyboard</span></button>
+                  className={"relative cursor-pointer group " + (chunkRef.current >= chunks.length - 1 ? "text-zinc-300 dark:text-zinc-700" : "text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200")}>
+                  ▼<span className="invisible group-hover:visible absolute left-full top-1/2 -translate-y-1/2 ml-2 whitespace-nowrap rounded bg-zinc-800 px-2 py-1 text-xs text-white dark:bg-zinc-100 dark:text-zinc-900">You can also use ↓ on keyboard</span>
+                </button>
               </div>
             </div>
           )}
           <div ref={diffRef} className="rounded-lg border border-zinc-300 font-mono text-sm leading-relaxed dark:border-zinc-700">
-              {diff.map((line, i) => {
+            {diff.map((line, i) => {
               const segs = charDiffs.get(i)
               return (
                 <div key={i} className={"flex whitespace-pre-wrap " + (line.type === "added" ? "bg-green-50 dark:bg-green-950" : line.type === "removed" ? "bg-red-50 dark:bg-red-950" : "bg-white dark:bg-zinc-800")}>
