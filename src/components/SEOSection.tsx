@@ -1,5 +1,30 @@
+import Link from "next/link"
+import { tools } from "@/lib/tools"
+
+const relatedMap: Record<string, string[]> = {
+  "json-formatter": ["json-to-types", "regex-tester", "diff-checker", "base64"],
+  "base64": ["url-encoder", "jwt-debugger", "json-formatter", "qr-generator"],
+  "uuid-generator": ["timestamp-converter", "regex-tester", "qr-generator", "json-formatter"],
+  "diff-checker": ["regex-tester", "json-formatter", "json-to-types", "base64"],
+  "regex-tester": ["diff-checker", "json-formatter", "json-to-types", "base64"],
+  "json-to-types": ["json-formatter", "diff-checker", "regex-tester", "color-converter"],
+  "timestamp-converter": ["uuid-generator", "jwt-debugger", "qr-generator", "diff-checker"],
+  "url-encoder": ["base64", "jwt-debugger", "json-formatter", "regex-tester"],
+  "jwt-debugger": ["base64", "url-encoder", "timestamp-converter", "json-formatter"],
+  "qr-generator": ["uuid-generator", "base64", "url-encoder", "color-converter"],
+  "color-converter": ["gradient-viewer", "json-to-types", "qr-generator", "diff-checker"],
+  "gradient-viewer": ["color-converter", "json-to-types", "qr-generator", "diff-checker"],
+}
+
+function getRelatedTools(slug: string) {
+  const related = relatedMap[slug]
+  if (!related) return []
+  return related.map((s) => tools.find((t) => t.slug === s)).filter(Boolean) as Array<typeof tools[number]>
+}
+
 export default function SEOSection({ slug }: { slug: string }) {
   const content = getContent(slug)
+  const related = getRelatedTools(slug)
   if (!content) return null
 
   return (
@@ -15,6 +40,23 @@ export default function SEOSection({ slug }: { slug: string }) {
           </div>
         </div>
       ))}
+      {related.length > 0 && (
+        <div className="mt-12 border-t border-zinc-100 pt-8 dark:border-zinc-800">
+          <h3 className="mb-4 text-lg font-semibold text-zinc-800 dark:text-zinc-200">Related Tools</h3>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {related.map((tool) => (
+              <Link
+                key={tool.slug}
+                href={`/tools/${tool.slug}`}
+                className="rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm font-medium text-zinc-700 transition-colors hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:bg-zinc-700"
+              >
+                <span className="mr-2">{tool.emoji}</span>
+                {tool.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
