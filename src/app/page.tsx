@@ -44,6 +44,69 @@ export default function Home() {
             </Link>
           ))}
         </div>
+
+        <div className="mt-24 border-t border-zinc-200 pt-16 dark:border-zinc-800">
+          <div className="mx-auto max-w-4xl">
+            <h2 className="mb-8 text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+              Free Online Developer Tools
+            </h2>
+            <div className="space-y-12 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+              <div>
+                <h3 className="mb-4 text-lg font-semibold text-zinc-800 dark:text-zinc-200">
+                  All tools run directly in your browser
+                </h3>
+                <p className="mb-3">
+                  Every tool in this collection runs entirely in your browser using the Web Crypto API, Canvas API, and modern JavaScript. No data is sent to any server — your JSON, tokens, passwords, and diff comparisons stay private on your machine. This makes the tools fast, secure, and available offline after the first page load.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="mb-4 text-lg font-semibold text-zinc-800 dark:text-zinc-200">
+                  Built for developers who need quick answers
+                </h3>
+                <p className="mb-3">
+                  Whether you&apos;re debugging an API response, generating a UUID for a new database record, decoding a JWT token, or formatting a minified JSON file — these tools are designed to get you the answer in seconds. Paste, click, copy. No signup, no ads, no distractions.
+                </p>
+                <p className="mb-3">
+                  The collection covers the most common developer workflows: formatting and validating data (JSON), encoding and decoding strings (Base64, URL), generating identifiers (UUID, QR codes), converting between formats (colors, timestamps, JSON-to-types), and comparing differences (text diff).
+                </p>
+              </div>
+
+              <div>
+                <h3 className="mb-4 text-lg font-semibold text-zinc-800 dark:text-zinc-200">
+                  Keyboard shortcuts and power-user features
+                </h3>
+                <p className="mb-3">
+                  Many tools include keyboard shortcuts for faster workflows. The Diff Checker supports arrow key navigation between changes, and individual changes can be accepted or rejected with a single click. The Regex Tester includes flag toggles for case-insensitive, multiline, and global matching. The JSON Formatter supports both pretty-print and minification in one click.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="mb-4 text-lg font-semibold text-zinc-800 dark:text-zinc-200">
+                  Frequently Asked Questions
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium text-zinc-700 dark:text-zinc-300">Is this tool free to use?</h4>
+                    <p>Yes, all tools are completely free with no usage limits, no signups, and no ads.</p>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-zinc-700 dark:text-zinc-300">Does my data stay private?</h4>
+                    <p>Yes. All processing happens in your browser. Your data is never uploaded to any server.</p>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-zinc-700 dark:text-zinc-300">Can I use these tools offline?</h4>
+                    <p>Yes. After the first visit, the tools are cached by your browser and work offline.</p>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-zinc-700 dark:text-zinc-300">What browsers are supported?</h4>
+                    <p>All modern browsers including Chrome, Firefox, Safari, and Edge. Mobile browsers are fully supported.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   )

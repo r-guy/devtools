@@ -13,6 +13,7 @@ import UrlEncoderDecoder from "@/components/UrlEncoderDecoder"
 import JwtDecoder from "@/components/JwtDecoder"
 import JsonToTypes from "@/components/JsonToTypes"
 import DiffChecker from "@/components/DiffChecker"
+import SEOSection from "@/components/SEOSection"
 
 type Params = Promise<{ slug: string }>
 
@@ -84,6 +85,7 @@ export default async function ToolPage({ params }: { params: Params }) {
             </p>
           </div>
         )}
+        <SEOSection slug={tool.slug} />
       </div>
     </div>
   )
